@@ -1,0 +1,77 @@
+### 1. Title and Abstract
+
+**Title**: *Classifying Coherent and Non-Coherent Frequency Shift Keying (FSK) Signals Using Convolutional Neural Networks (CNN) for Efficient Signal Monitoring*
+
+**Abstract**:  
+In digital communication systems, distinguishing between coherent and non-coherent signals is critical for efficient channel monitoring and signal processing. Coherent signals carry meaningful data, while non-coherent signals, typically alternating 0s and 1s, represent idle periods. This project proposes a Convolutional Neural Network (CNN) model to classify Cross-Ambiguity Function (CAF) surfaces generated from Frequency Shift Keying (FSK) signals as either coherent or non-coherent. By analyzing the time-frequency correlations in CAF surfaces, the CNN will quickly and efficiently determine whether a received signal contains significant data or is merely idling. This capability can be instrumental in improving the performance of receivers by allowing them to prioritize coherent signals for processing, thus saving computational resources during non-coherent periods. The training data will consist of CAF surface images generated from simulated FSK signals with varying degrees of coherence, channel impairments, and environmental noise. With this approach, the model can enhance real-time signal monitoring in dynamic communication environments.
+
+### 2. Introduction and Related Work
+
+**Introduction**:  
+In modern digital communication systems, efficient signal monitoring is vital for both military and commercial applications. A common challenge in such systems is determining whether the received signal contains meaningful information or simply represents an idle state. Signals can either be **coherent**, where the bits being transmitted represent significant, meaningful data, or **non-coherent**, where the transmitter is merely alternating between 0s and 1s—an indicator that the system is idling. This idling period often signals that no important communication is occurring, and it can waste computational resources if unnecessarily processed.
+
+A key tool in this analysis is the Cross-Ambiguity Function (CAF), which evaluates time and frequency correlations between a known signal template and the received signal, generating a surface that highlights these correlations. In the case of Frequency Shift Keying (FSK) signals, coherent and non-coherent signals produce distinctive CAF surfaces. However, interpreting these surfaces manually or using traditional methods can be computationally expensive, especially in real-time applications. This project seeks to automate this process by using a Convolutional Neural Network (CNN) to classify CAF surfaces as either coherent or non-coherent, allowing for faster and more efficient signal monitoring.
+
+**Related Work**:  
+While modulation classification has been a popular research topic in the application of CNNs in communication systems, the classification of coherent versus non-coherent signals has not been as thoroughly explored. Previous studies have applied CNNs for tasks such as modulation recognition using spectrograms or time-frequency representations, with promising results. CNNs are well-suited for this type of problem, as they can capture complex patterns in images that might be missed by traditional signal processing techniques. However, the task of distinguishing coherent from non-coherent signals specifically using CAF surfaces is novel and holds the potential to greatly enhance the efficiency of communication receivers by optimizing how they allocate resources.
+
+### 3. Proposed Contributions
+
+This project proposes the following key contributions:
+
+1. **CNN-Based Classification of Coherent vs. Non-Coherent FSK Signals**:  
+   We aim to develop a CNN model capable of classifying FSK-based CAF surfaces as either coherent (containing meaningful data) or non-coherent (idle, alternating 0s and 1s). This classification will allow communication systems to quickly determine whether a signal is worth processing or can be ignored during idle periods, thus improving efficiency.
+
+2. **Generation of Realistic Training Data**:  
+   A dataset of CAF surface images will be generated using synthetic FSK signals. The dataset will include both coherent and non-coherent signals, and various channel impairments such as time delays, frequency offsets, and noise will be introduced to simulate real-world communication environments. Between 2000 and 4000 training examples per class will be generated, creating a balanced dataset for robust model training.
+
+3. **Improved Efficiency in Signal Monitoring**:  
+   By classifying signals as coherent or non-coherent, this model provides an efficient method for channel monitoring, saving computational resources by allowing systems to focus only on coherent signals. This can significantly improve the performance of receivers, especially in environments where bandwidth and processing power are limited.
+
+### 4. Evaluation Plan
+
+The proposed CNN model will be evaluated on several fronts to ensure its effectiveness and efficiency. The evaluation process will include:
+
+1. **Dataset Generation**:  
+   The first step involves generating a large dataset of CAF surfaces using simulated FSK signals. Two classes will be defined: coherent (meaningful data) and non-coherent (alternating 0s and 1s). Each class will contain between 2000 and 4000 CAF surface images to ensure the model has sufficient training data. The dataset will incorporate various real-world impairments such as time delays, frequency shifts, and noise.
+
+2. **Model Training and Validation**:  
+   The CNN will be trained using 80% of the dataset, with 10% reserved for validation and 10% for testing. During training, standard metrics such as accuracy, precision, recall, and F1-score will be used to track performance. Cross-validation will also be employed to prevent overfitting and ensure generalizability across different subsets of data.
+
+3. **Real-World Testing with Simulated Channels**:  
+   After training, the model will be tested in simulated communication environments where varying levels of signal coherence and channel noise will be introduced. The model’s performance in accurately classifying coherent and non-coherent signals in these noisy conditions will be evaluated.
+
+4. **Efficiency and Computational Overhead**:  
+   The computational efficiency of the CNN-based classification will be compared to traditional methods for detecting coherent signals. We will measure the time required for the model to classify a CAF surface, as well as the overall reduction in processing load when using the model to filter out non-coherent signals.
+
+### 5. Primary Experiments
+
+The primary experiments for this project will be designed to evaluate the CNN’s ability to classify coherent and non-coherent FSK signals under varying conditions:
+
+1. **Data Generation**:  
+   The experiment will begin by generating FSK signals with varying degrees of coherence. Coherent signals will contain meaningful data, while non-coherent signals will consist of alternating 0s and 1s. Time and frequency delays, as well as random noise, will be added to simulate a real-world communication environment. The corresponding CAF surfaces will be generated, producing images that serve as input to the CNN.
+
+2. **CNN Training and Hyperparameter Tuning**:  
+   The generated dataset will be used to train a deep CNN model, with a focus on optimizing hyperparameters such as the number of layers, filter sizes, and learning rates. The model will be trained to classify the CAF surfaces into two categories: coherent or non-coherent. Various training techniques, such as early stopping and data augmentation, will be employed to improve the model’s generalizability.
+
+3. **Performance Evaluation**:  
+   After training, the CNN will be tested on unseen data, including CAF surfaces generated with different signal-to-noise ratios. Performance metrics such as classification accuracy, confusion matrix, and computation time will be used to evaluate the model’s effectiveness. Particular attention will be paid to the model’s ability to correctly identify non-coherent signals in noisy environments, as this represents the primary utility of the system.
+
+4. **Real-Time Signal Monitoring Simulation**:  
+   A simulated real-time communication system will be set up to test the model’s ability to classify coherent and non-coherent signals on the fly. The focus will be on how well the model can reduce computational load by filtering out non-coherent signals before they reach more computationally intensive processing stages.
+
+### 6. Work Distribution
+
+The project will require collaboration across several teams with distinct responsibilities:
+
+1. **Data Generation (Signal Processing Team)**:  
+   This team will be responsible for generating the synthetic FSK signals, adding relevant channel impairments, and creating the CAF surfaces. They will ensure that both coherent and non-coherent signals are properly represented in the dataset, and that all necessary environmental factors such as noise and delay are included.
+
+2. **Model Development (Machine Learning Team)**:  
+   The machine learning team will design and implement the CNN architecture. This team will focus on training the model, tuning hyperparameters, and ensuring that the model is able to accurately classify CAF surfaces. They will also handle model validation and testing.
+
+3. **Evaluation and Testing (Evaluation Team)**:  
+   The evaluation team will be responsible for conducting experiments to test the model’s performance. They will oversee the real-world simulations and measure the model’s computational efficiency and classification accuracy.
+
+4. **Integration and Final Report (Lead Researcher)**:  
+   The lead researcher will coordinate the efforts of all teams, ensuring that the project’s objectives are met. They will compile the results into a final report and make recommendations for future improvements or applications of the model.
