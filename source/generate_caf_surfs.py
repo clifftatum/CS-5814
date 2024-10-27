@@ -155,33 +155,39 @@ if __name__ == '__main__':
     chirp_length = int(duration_samples)
     chirp_order = 1
 
-    total_span = 60
+    total_span = 25
     relative_bandwidth = 1 #np.linspace(start=3,stop=5,num=total_span)#np.random.uniform(1e-3, 10) # Width of chirp, relative to sample rate
     sweep_range_Hz = np.linspace(start=.1,stop=3,num=total_span)#np.random.uniform(5, 100) # Range of chirp
     time_delays = np.linspace(start=sample_rate*2,stop=0,num=total_span,dtype=int)
     freq_delays = np.linspace(start=-2.4, stop=2.4, num=total_span)
 
-    oct_26_ind_beg = 0
-    oct_26_ind_end = 20
-    sweep_range_Hz = sweep_range_Hz[oct_26_ind_beg:oct_26_ind_end]
-    time_delays = time_delays[oct_26_ind_beg:oct_26_ind_end]
-    freq_delays = freq_delays[oct_26_ind_beg:oct_26_ind_end]
+    # oct_26_ind_beg = 0
+    # oct_26_ind_end = 20
+    # sweep_range_Hz = sweep_range_Hz[oct_26_ind_beg:oct_26_ind_end]
+    # time_delays = time_delays[oct_26_ind_beg:oct_26_ind_end]
+    # freq_delays = freq_delays[oct_26_ind_beg:oct_26_ind_end]
 
-    total_iters = 2*(total_span**3)
-    oct_26_span= 2*(oct_26_ind_end**3)
+    total_iters = 4*(total_span**3)
+    # oct_26_span= 2*(oct_26_ind_end**3)
     c = 0
     print(datetime.now())
     freq_offsets = np.arange(-2.5, 2.5, 0.0001)
 
+    coherent_fsk,_ = generate_fsk_signal(f0, f1, 'coherent', duration_samples, baud_rate, sample_rate)
+    non_coherent_fsk,_ = generate_fsk_signal(f0, f1, 'non-coherent', duration_samples, baud_rate, sample_rate)
 
-
-
-    for mode in ['coherent','non-coherent']:
-        fsk_signal, t = generate_fsk_signal(f0, f1, mode, duration_samples, baud_rate, sample_rate)
+    for smear_hz in sweep_range_Hz:
         for dt in time_delays:
             for df in freq_delays:
-                for smear_hz in sweep_range_Hz:
-                    c+=1
+                for mode in ['coherent', 'non-coherent']:
+                    fsk_signal, t = generate_fsk_signal(f0, f1, mode, duration_samples, baud_rate, sample_rate)
+
+                    if mode =='coherent':
+                        fsk_signal = coherent_fsk
+                    elif mode =='non-coherent':
+                        fsk_signal = non_coherent_fsk
+
+                    c+=2
                     signal_wf = smear( sig =fsk_signal,
                                        chirp_length=chirp_length,
                                        chirp_order=float(chirp_order),
@@ -216,13 +222,11 @@ if __name__ == '__main__':
                         -len(template_chirp) // 2, len(template_chirp) // 2,
                         freq_offsets[-1], freq_offsets[0]]
                     plt.figure(dpi=150)
+                    plt.axis('off')
                     plt.imshow(np.flip(surf, axis=1), aspect='auto', interpolation='nearest', extent=extents,
                                cmap='jet')
-
-                    # plt.ylabel('Frequency offset [Hz]')
-                    # plt.xlabel('Time lag [samples]')
+                    # Must make this correction(author bug)
                     plt.gca().invert_yaxis()
-                    plt.axis('off')  # Hide axes
                     path = r'C:\Users\cft5385\Documents\Learning\GradSchool\Repos\CS-5814\images'
                     name = mode + '_time_lag_sec{:.5f}_freq_shift_hz{:.5f}_smear_{:.5f}.png'.format(
                         tau_max * (1 / samp_rate),
@@ -230,9 +234,22 @@ if __name__ == '__main__':
                         smear_hz)
                     plt.savefig(os.path.join(path,name), bbox_inches='tight', pad_inches=0)
                     # plt.show()
+                      # Hide axes
+                    # plt.ylabel('Frequency offset [Hz]')
+                    # plt.xlabel('Time lag [samples]')
+                    # This is for the time delay reflection
+                    plt.gca().invert_xaxis()
+                    name = mode + '_time_lag_sec{:.5f}_freq_shift_hz{:.5f}_smear_{:.5f}.png'.format(
+                        -tau_max * (1 / samp_rate),
+                        df,
+                        smear_hz)
+                    plt.savefig(os.path.join(path,name), bbox_inches='tight', pad_inches=0)
+
+                    # plt.show()
                     plt.close()
 
-                    print(str(c)+'/'+ str(oct_26_span)+ ' '+ name)
-                    pass
+
+
+                    print(str(c)+'/'+ str(total_iters)+ ' '+ name)
 
     print('Finished: '+ str(datetime.now()))
