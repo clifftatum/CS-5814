@@ -183,10 +183,11 @@ if __name__ == '__main__':
                     fsk_signal, t = generate_fsk_signal(f0, f1, mode, duration_samples, baud_rate, sample_rate)
 
                     if mode =='coherent':
-                        fsk_signal = coherent_fsk
+                        fsk_signal, _ = generate_fsk_signal(f0, f1, 'coherent', duration_samples, baud_rate,
+                                                              sample_rate)
                     elif mode =='non-coherent':
-                        fsk_signal = non_coherent_fsk
-
+                        fsk_signal, _ = generate_fsk_signal(f0, f1, 'non-coherent', duration_samples, baud_rate,
+                                                                  sample_rate)
                     c+=2
                     signal_wf = smear( sig =fsk_signal,
                                        chirp_length=chirp_length,
@@ -202,7 +203,7 @@ if __name__ == '__main__':
                     signal_channel = np.concatenate([np.zeros(lag), template_chirp, np.zeros(96)])
 
                     # Add noise
-                    signal_channel += np.random.normal(0, 1, len(signal_channel)) + 1j * np.random.normal(0, 1,
+                    signal_channel += np.random.normal(0, .1, len(signal_channel)) + 1j * np.random.normal(0, .1,
                                                                               len(signal_channel))
 
                     # Freq shift
