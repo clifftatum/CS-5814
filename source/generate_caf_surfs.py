@@ -202,8 +202,8 @@ if __name__ == '__main__':
                     signal_channel = np.concatenate([np.zeros(lag), template_chirp, np.zeros(96)])
 
                     # Add noise
-                    # signal_channel += np.random.normal(0, .5, len(signal_channel)) + 1j * np.random.normal(0, .5,
-                    #                                                           len(signal_channel))
+                    signal_channel += np.random.normal(0, 1, len(signal_channel)) + 1j * np.random.normal(0, 1,
+                                                                              len(signal_channel))
 
                     # Freq shift
                     signal_channel = apply_offset(signal_channel, float(df), samp_rate)
