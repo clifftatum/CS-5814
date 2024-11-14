@@ -85,7 +85,9 @@ if __name__ == '__main__':
     # input_labels = np.hstack(class_labels)
 
     # Define your image directory and target size
-    image_dir = r'C:\Users\cft5385\Documents\Learning\GradSchool\Repos\CS-5814\training_images'
+    image_dir = os.path.join(os.getcwd(), "training_images")
+    if not os.path.exists(image_dir):
+        os.makedirs(image_dir)
     target_size = (168, 168)  # You may use another size, just be consistent across your data
     images = []
     labels = []  # Use integers or class names as labels
