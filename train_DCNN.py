@@ -91,7 +91,7 @@ if __name__ == '__main__':
     target_size = (168, 168)  # You may use another size, just be consistent across your data
     images = []
     labels = []  # Use integers or class names as labels
-    len_dir =62232
+    len_dir = 62232
 
     # Loop through your images
     for dir in os.listdir(image_dir):  # Assuming each class has its own directory
