@@ -61,11 +61,15 @@ if __name__ == '__main__':
     import os
 
 
-    image_dir = r'C:\Users\cft5385\Documents\Learning\GradSchool\Repos\CS-5814\training_images'
+
+
+    image_dir = os.path.join(os.getcwd(), "training_images")
+    if not os.path.exists(image_dir):
+        os.makedirs(image_dir)
     target_size = (168, 168)
     images = []
     labels = []
-    len_dir =62232
+    len_dir = 62232
 
 
     for dir in os.listdir(image_dir):

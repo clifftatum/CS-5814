@@ -228,12 +228,16 @@ if __name__ == '__main__':
                                cmap='jet')
                     # Must make this correction(author bug)
                     plt.gca().invert_yaxis()
-                    path = r'C:\Users\cft5385\Documents\Learning\GradSchool\Repos\CS-5814\images'
+
+                    path = os.path.join(os.getcwd(), "images")
+                    if not os.path.exists(path):
+                        os.makedirs(path)
+                        
                     name = mode + '_time_lag_sec{:.5f}_freq_shift_hz{:.5f}_smear_{:.5f}.png'.format(
                         tau_max * (1 / samp_rate),
                         df,
                         smear_hz)
-                    plt.savefig(os.path.join(path,name), bbox_inches='tight', pad_inches=0)
+                    plt.savefig(os.path.join(path, name), bbox_inches='tight', pad_inches=0)
                     # plt.show()
                       # Hide axes
                     # plt.ylabel('Frequency offset [Hz]')
