@@ -2,10 +2,8 @@ import tensorflow as tf
 from keras_preprocessing.image import load_img, img_to_array
 from matplotlib import pyplot as plt
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 import tensorflow as tf
 import numpy as np
-# from tensorflow.keras.preprocessing.image import img_to_array, load_img
 import os
 from sklearn.model_selection import train_test_split
 gpus = tf.config.experimental.list_physical_devices('GPU')
@@ -49,12 +47,7 @@ class LeNet(tf.keras.Model):
 
 if __name__ == '__main__':
 
-    # (x_train,y_train),(x_test,y_test) = datasets.mnist.load_data()
-    # y_train = tf.keras.utils.to_categorical(y_train,10)
-    # plt.imshow(x_train[0])
-    # plt.title(f"Label: {y_train[0][0]}")
-    # plt.show()
-    # Check if TensorFlow can see GPUs
+    # Disabling GPUs with this command, not enough mem, CPU works but takes a feq hours
     os.environ["CUDA_VISIBLE_DEVICES"] = "-1"  # Disables GPU
     print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
 
@@ -67,32 +60,15 @@ if __name__ == '__main__':
 
     import os
 
-    # dataset_dir = r'C:\Users\cft5385\Documents\Learning\GradSchool\Repos\CS-5814\training_images'
-    # dataset = []
-    # class_labels = []
-    # dir = os.listdir(dataset_dir)
-    # # Loop through your images
-    # for i in np.arange(1,3):  # Assuming each class has its own directory
-    #     path = os.path.join(dataset_dir,rf'caf_dataset_{i}_of_20.npy')
-    #     data = np.load(path,allow_pickle=True)
-    #     images = data.item().get('images')
-    #     labels = data.item().get('labels')
-    #     dataset.append(images)
-    #     class_labels.append(labels)
-    #     print(path)
-    #
-    # input_data = np.vstack(dataset)
-    # input_labels = np.hstack(class_labels)
 
-    # Define your image directory and target size
     image_dir = r'C:\Users\cft5385\Documents\Learning\GradSchool\Repos\CS-5814\training_images'
-    target_size = (168, 168)  # You may use another size, just be consistent across your data
+    target_size = (168, 168)
     images = []
-    labels = []  # Use integers or class names as labels
+    labels = []
     len_dir =62232
 
-    # Loop through your images
-    for dir in os.listdir(image_dir):  # Assuming each class has its own directory
+
+    for dir in os.listdir(image_dir):
         path = os.path.join(image_dir, dir)
         if os.path.isdir(path):
             for i,img_name in enumerate(os.listdir(path)):
@@ -142,8 +118,7 @@ if __name__ == '__main__':
     model.summary()
 
     # Fit the model
-    # train_dataset = tf.data.Dataset.from_tensor_slices((x_train, y_train))
-    # train_dataset = train_dataset.batch(BATCH_SIZE).prefetch(tf.data.AUTOTUNE)
+
     history = model.fit(x_train, y_train,
                         batch_size=BATCH_SIZE,
                         epochs = EPOCHS,
