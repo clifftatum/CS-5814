@@ -1,12 +1,12 @@
 import numpy as np
 import os
-from tensorflow.keras.preprocessing.image import array_to_img
+from keras_preprocessing.image import array_to_img
 
 # Define the directory where your .npy files are saved
-npy_dir = r'C:\Users\cft5385\Documents\Learning\GradSchool\Repos\CS-5814\training_images'
+npy_dir = os.path.join(os.getcwd(), "training_images")
 
 # Directory to save the reconstructed images
-output_dir = r'C:\Users\cft5385\Documents\Learning\GradSchool\Repos\CS-5814\reconstructed_images'
+output_dir = os.path.join(os.getcwd(), "reconstructed_images")
 os.makedirs(output_dir, exist_ok=True)  # Create the directory if it doesn't exist
 
 

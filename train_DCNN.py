@@ -5,14 +5,16 @@ import os
 import tensorflow as tf
 import numpy as np
 import os
+import gc
 from sklearn.model_selection import train_test_split
+
 gpus = tf.config.experimental.list_physical_devices('GPU')
 # tf.config.experimental.set_memory_growth(gpus[0], True)
 
 
 # Training Parameters
 EPOCHS = 100
-BATCH_SIZE = 50
+BATCH_SIZE = 16
 VERBOSE = 1
 OPTIMIZER = tf.keras.optimizers.Adam()
 VALIDATION_SPLIT = 0.90
@@ -43,8 +45,6 @@ class LeNet(tf.keras.Model):
         return self.fc2(x)  # The output layer with softmax for predictions
 
 
-
-
 if __name__ == '__main__':
 
     # Disabling GPUs with this command, not enough mem, CPU works but takes a feq hours
@@ -58,12 +58,7 @@ if __name__ == '__main__':
     else:
         print("No GPU detected or GPU is not being utilized by TensorFlow.")
 
-    import os
-
-
-
-
-    image_dir = os.path.join(os.getcwd(), "training_images")
+    image_dir = os.path.join(os.getcwd(), "reconstructed_images")
     if not os.path.exists(image_dir):
         os.makedirs(image_dir)
     target_size = (168, 168)
@@ -71,29 +66,30 @@ if __name__ == '__main__':
     labels = []
     len_dir = 62232
 
+    i = 1
+    for img_name in os.listdir(image_dir):
+        img_path = os.path.join(image_dir, img_name)
+        if img_name.endswith(('.jpg', '.png', '.jpeg')):  # Ensure it's an image
+            # Load and preprocess the image
+            img = load_img(img_path, target_size=target_size)
+            img_array = img_to_array(img) / 255.0  # Normalize pixel values
+            images.append(img_array)
 
-    for dir in os.listdir(image_dir):
-        path = os.path.join(image_dir, dir)
-        if os.path.isdir(path):
-            for i,img_name in enumerate(os.listdir(path)):
-                img_path = os.path.join(path, img_name)
-                img = load_img(img_path,target_size=target_size)
-                img_array = img_to_array(img)/255
-                images.append(img_array)
-                if img_name.split('_')[0]=='coherent':
-                    labels.append(0)
-                elif img_name.split('_')[0]=='non-coherent':
-                    labels.append(1)
-                print(str(i) +'/'+str(len_dir))
-
+            # Assign labels based on the filename
+            if img_name.startswith('coherent'):
+                labels.append(0)  # Label for 'coherent'
+            elif img_name.startswith('non-coherent'):
+                labels.append(1)  # Label for 'non-coherent'
+            print(f"{i} / {len_dir} loaded")
+            i += 1
 
     input_data = np.array(images)
     input_labels = np.array(labels)
     del images
     del labels
-    import gc
     gc.collect()
 
+    print("Data loaded and labelled.")
 
     # Input image parameters
     IMG_ROW,IMG_COL = target_size[0],target_size[1]
@@ -103,7 +99,8 @@ if __name__ == '__main__':
 
     # Split the data by train,test~ 85%
     x_train, x_test, y_train, y_test = train_test_split(input_data,input_labels,
-                                                        test_size=0.15,
+                                                        test_size=0.25,
+                                                        train_size=0.75,
                                                         shuffle=True,
                                                         random_state=42)
 
@@ -112,24 +109,25 @@ if __name__ == '__main__':
     y_test = tf.keras.utils.to_categorical(y_test, NB_CLASSES)
 
     # Build the CNN (LeNet)
-    model = LeNet(input_shape=INPUT_SHAPE,classes=NB_CLASSES)
+    model = LeNet(input_shape=INPUT_SHAPE, classes=NB_CLASSES)
     model.compile(
         loss=tf.keras.losses.CategoricalCrossentropy(),
-        optimizer=tf.keras.optimizers.Adam(),
+        optimizer=OPTIMIZER,
         metrics=[tf.keras.metrics.Accuracy()]
     )
     model.build((None, *INPUT_SHAPE))
     model.summary()
 
     # Fit the model
-
-    history = model.fit(x_train, y_train,
+    history = model.fit(x_train, 
+                        y_train,
                         batch_size=BATCH_SIZE,
-                        epochs = EPOCHS,
+                        epochs=EPOCHS,
                         verbose=VERBOSE,
                         validation_split=VALIDATION_SPLIT)
     score = model.evaluate(x = x_test,
-                           y = y_test,verbose=VERBOSE)
+                           y = y_test,
+                           verbose=VERBOSE)
     print(rf"Test Score {score[0]}")
     print(rf"Test Accuracy {score[1]}")
 
@@ -148,39 +146,3 @@ if __name__ == '__main__':
     plt.ylabel('Loss')
     plt.legend()
     plt.show()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

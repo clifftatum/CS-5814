@@ -1,8 +1,8 @@
 import tensorflow as tf
 from matplotlib import pyplot as plt
-from tensorflow.keras import datasets
+from keras import datasets
 import numpy as np
-from tensorflow.keras.preprocessing.image import img_to_array, load_img
+from keras_preprocessing.image import img_to_array, load_img
 import os
 
 if __name__ == '__main__':
