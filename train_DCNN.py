@@ -12,8 +12,8 @@ gpus = tf.config.experimental.list_physical_devices('GPU')
 
 
 # Training Parameters
-EPOCHS = 100
-BATCH_SIZE = 16
+EPOCHS = 10
+BATCH_SIZE = 32
 VERBOSE = 1
 OPTIMIZER = tf.keras.optimizers.Adam()
 VALIDATION_SPLIT = 0.90
