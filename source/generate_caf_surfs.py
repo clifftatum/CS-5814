@@ -63,7 +63,7 @@ def generate_fsk_signal(f0, f1, mode, fsk_length, baud_rate, sample_rate):
     samples_per_bit = int(sample_rate / baud_rate)
     num_bits = int(fsk_length / samples_per_bit)
     segment_length = int(num_bits//2)
-
+    # segment_length = int(.85*num_bits)
     # Generate bitstream
     if mode == 'coherent':
         # np.random.seed(0)  # Optional: For reproducibility
@@ -155,19 +155,20 @@ if __name__ == '__main__':
     chirp_length = int(duration_samples)
     chirp_order = 1
 
-    total_span = 25
+    # total_span = 25
+    # relative_bandwidth = 1 #np.linspace(start=3,stop=5,num=total_span)#np.random.uniform(1e-3, 10) # Width of chirp, relative to sample rate
+    # sweep_range_Hz = np.linspace(start=.1,stop=3,num=total_span)#np.random.uniform(5, 100) # Range of chirp
+    # time_delays = np.linspace(start=sample_rate*2,stop=0,num=total_span,dtype=int)
+    # freq_delays = np.linspace(start=-2.4, stop=2.4, num=total_span)
+
+    total_span = 1
     relative_bandwidth = 1 #np.linspace(start=3,stop=5,num=total_span)#np.random.uniform(1e-3, 10) # Width of chirp, relative to sample rate
-    sweep_range_Hz = np.linspace(start=.1,stop=3,num=total_span)#np.random.uniform(5, 100) # Range of chirp
+    sweep_range_Hz = np.linspace(start=.1,stop=3,num=1)#np.random.uniform(5, 100) # Range of chirp
     time_delays = np.linspace(start=sample_rate*2,stop=0,num=total_span,dtype=int)
-    freq_delays = np.linspace(start=-2.4, stop=2.4, num=total_span)
+    freq_delays = np.linspace(start=0, stop=-2.2, num=total_span)
 
-    # oct_26_ind_beg = 0
-    # oct_26_ind_end = 20
-    # sweep_range_Hz = sweep_range_Hz[oct_26_ind_beg:oct_26_ind_end]
-    # time_delays = time_delays[oct_26_ind_beg:oct_26_ind_end]
-    # freq_delays = freq_delays[oct_26_ind_beg:oct_26_ind_end]
 
-    total_iters = 4*(total_span**3)
+    total_iters = (total_span**2)
     # oct_26_span= 2*(oct_26_ind_end**3)
     c = 0
     print(datetime.now())
@@ -177,9 +178,9 @@ if __name__ == '__main__':
     non_coherent_fsk,_ = generate_fsk_signal(f0, f1, 'non-coherent', duration_samples, baud_rate, sample_rate)
 
     for smear_hz in sweep_range_Hz:
-        for dt in time_delays:
-            for df in freq_delays:
-                for mode in ['coherent', 'non-coherent']:
+        for df in freq_delays:
+            for dt in time_delays:
+                for mode in ['coherent']:#, 'non-coherent']:
                     fsk_signal, t = generate_fsk_signal(f0, f1, mode, duration_samples, baud_rate, sample_rate)
 
                     if mode =='coherent':
@@ -188,7 +189,7 @@ if __name__ == '__main__':
                     elif mode =='non-coherent':
                         fsk_signal, _ = generate_fsk_signal(f0, f1, 'non-coherent', duration_samples, baud_rate,
                                                                   sample_rate)
-                    c+=2
+                    c+=1
                     signal_wf = smear( sig =fsk_signal,
                                        chirp_length=chirp_length,
                                        chirp_order=float(chirp_order),
@@ -201,10 +202,18 @@ if __name__ == '__main__':
                     # Time shift
                     lag = dt
                     signal_channel = np.concatenate([np.zeros(lag), template_chirp, np.zeros(96)])
-
-                    # Add noise
+                    # P_signal = np.mean(np.abs(signal_channel) ** 2)
+                    # # Add noise
                     signal_channel += np.random.normal(0, .1, len(signal_channel)) + 1j * np.random.normal(0, .1,
                                                                               len(signal_channel))
+
+
+
+
+
+
+                    # SNR_dB = 10 * np.log10(P_signal / .02)
+
 
                     # Freq shift
                     signal_channel = apply_offset(signal_channel, float(df), samp_rate)
@@ -212,7 +221,7 @@ if __name__ == '__main__':
 
                     signal_channel = signal_channel.astype(np.complex64)
                     # signal_channel.tofile(os.path.join(data_dir, 'chirp_{:d}_T{:+d}samp_F{:+.2f}Hz.c64'.format(0, lag, df)))
-
+                    freq_offsets = np.linspace(-2.5, 2.5, 800)
                     surf = amb_surf_numba(template_chirp, signal_channel[0:duration_samples], freq_offsets, samp_rate)
 
                     fmax, tmax = np.unravel_index(surf.argmax(), surf.shape)
@@ -223,13 +232,15 @@ if __name__ == '__main__':
                         -len(template_chirp) // 2, len(template_chirp) // 2,
                         freq_offsets[-1], freq_offsets[0]]
                     plt.figure(dpi=150)
-                    plt.axis('off')
+                    # plt.axis('off')
                     plt.imshow(np.flip(surf, axis=1), aspect='auto', interpolation='nearest', extent=extents,
                                cmap='jet')
+                    plt.ylabel('Frequency offset [Hz]')
+                    plt.xlabel('Time lag [samples]')
                     # Must make this correction(author bug)
                     plt.gca().invert_yaxis()
 
-                    path = os.path.join(os.getcwd(), "images")
+                    path = os.path.join(os.getcwd(),"report_pres_images",mode)
                     if not os.path.exists(path):
                         os.makedirs(path)
                         
@@ -237,24 +248,27 @@ if __name__ == '__main__':
                         tau_max * (1 / samp_rate),
                         df,
                         smear_hz)
+                    #### Presentation title
+                    name = f"{mode}_{c}.png"
+
                     plt.savefig(os.path.join(path, name), bbox_inches='tight', pad_inches=0)
                     # plt.show()
-                      # Hide axes
+                    #   # Hide axes
                     # plt.ylabel('Frequency offset [Hz]')
                     # plt.xlabel('Time lag [samples]')
-                    # This is for the time delay reflection
-                    plt.gca().invert_xaxis()
-                    name = mode + '_time_lag_sec{:.5f}_freq_shift_hz{:.5f}_smear_{:.5f}.png'.format(
-                        -tau_max * (1 / samp_rate),
-                        df,
-                        smear_hz)
-                    plt.savefig(os.path.join(path,name), bbox_inches='tight', pad_inches=0)
-
+                    # # This is for the time delay reflection
+                    # plt.gca().invert_xaxis()
+                    # name = mode + '_time_lag_sec{:.5f}_freq_shift_hz{:.5f}_smear_{:.5f}.png'.format(
+                    #     -tau_max * (1 / samp_rate),
+                    #     df,
+                    #     smear_hz)
+                    # plt.savefig(os.path.join(path,name), bbox_inches='tight', pad_inches=0)
+                    #
                     # plt.show()
-                    plt.close()
+                    # plt.close()
 
 
 
-                    print(str(c)+'/'+ str(total_iters)+ ' '+ name)
+                    # print(str(c)+'/'+ str(total_iters)+ ' '+ name)
 
     print('Finished: '+ str(datetime.now()))

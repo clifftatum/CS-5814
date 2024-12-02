@@ -6,42 +6,20 @@ import tensorflow as tf
 import numpy as np
 import os
 from sklearn.model_selection import train_test_split
+from models.DCNN import *
 
 gpus = tf.config.experimental.list_physical_devices('GPU')
-# tf.config.experimental.set_memory_growth(gpus[0], True)
-
+tf.config.experimental.set_memory_growth(gpus[0], True)
+from tensorflow.keras import mixed_precision
+mixed_precision.set_global_policy('mixed_float16')
 
 # Training Parameters
-EPOCHS = 10
+EPOCHS = 50
 BATCH_SIZE = 32
 VERBOSE = 1
-OPTIMIZER = tf.keras.optimizers.Adam()
+OPTIMIZER = tf.keras.optimizers.SGD()
 VALIDATION_SPLIT = 0.90
 
-class LeNet(tf.keras.Model):
-    def __init__(self, input_shape, classes, **kwargs):
-        super(LeNet, self).__init__(**kwargs)
-
-        self.conv1 = tf.keras.layers.Conv2D(filters=20, kernel_size=(5, 5), strides=(1, 1),
-                                            padding='valid', activation='relu')
-        self.pool1 = tf.keras.layers.MaxPooling2D(pool_size=(2, 2), strides=(2, 2))
-
-        self.conv2 = tf.keras.layers.Conv2D(filters=50, kernel_size=(5, 5), activation='relu')
-        self.pool2 = tf.keras.layers.MaxPooling2D(pool_size=(2, 2), strides=(2, 2))
-
-        self.flatten = tf.keras.layers.Flatten()
-        self.fc1 = tf.keras.layers.Dense(units=150, activation='relu')
-        self.fc2 = tf.keras.layers.Dense(units=classes, activation='softmax')
-
-    def call(self, inputs):
-        # Define forward pass using the layers defined in __init__
-        x = self.conv1(inputs)
-        x = self.pool1(x)
-        x = self.conv2(x)
-        x = self.pool2(x)
-        x = self.flatten(x)
-        x = self.fc1(x)
-        return self.fc2(x)  # The output layer with softmax for predictions
 
 def preprocess_image(img_path, label, target_size):
     try:
@@ -102,12 +80,16 @@ def create_dataset(image_dir, target_size, batch_size, split_ratio=0.75):
 
 if __name__ == '__main__':
 
-    # Disabling GPUs with this command, not enough mem, CPU works but takes a feq hours
-    os.environ["CUDA_VISIBLE_DEVICES"] = "-1"  # Disables GPU
-    image_dir = os.path.join(os.getcwd(), "reconstructed_images")
-    print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
-    target_size = (168, 168)
+    mod = 'LeNet'
+    # mod = 'VGG_16'
 
+    # Disabling GPUs with this command, not enough mem, CPU works but takes a feq hours
+    # tf.config.set_visible_devices([], 'GPU')
+    image_dir = os.path.join(os.getcwd(), "training_images\images")
+    print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
+
+    # TF dataset
+    target_size = (168, 168)
     train_dataset, test_dataset = create_dataset(image_dir, target_size, BATCH_SIZE)
 
     # List GPUs available
@@ -123,29 +105,46 @@ if __name__ == '__main__':
     INPUT_SHAPE = (IMG_ROW, IMG_COL, IMG_CHANNELS)
     NB_CLASSES = 2 # coherent and non-coherent
 
-    # Build the CNN (LeNet)
-    model = LeNet(input_shape=INPUT_SHAPE, classes=NB_CLASSES)
+    # Build
+    if mod == 'LeNet':
+        model = LeNet(input_shape=INPUT_SHAPE, classes=NB_CLASSES)
+    elif mod == 'VGG_16':
+        model = VGG_16(input_shape=INPUT_SHAPE, classes=NB_CLASSES)
 
     inputs = tf.keras.Input(shape=INPUT_SHAPE)
     outputs = model.call(inputs)
     model = tf.keras.Model(inputs, outputs)
 
     model.compile(
-        loss=tf.keras.losses.SparseCategoricalCrossentropy(),
+        loss=tf.keras.losses.BinaryCrossentropy(),
         optimizer=OPTIMIZER,
-        metrics=[tf.keras.metrics.SparseCategoricalAccuracy()]
+        metrics=[
+            tf.keras.metrics.BinaryAccuracy(name="accuracy"),
+            tf.keras.metrics.AUC(name="auc"),  # AUC for binary or multi-class
+        ]
     )
+
+    # EarlyStopping
+    early_stopping = tf.keras.callbacks.EarlyStopping(
+        monitor='val_loss',  # Monitor validation loss
+        patience=3,  # Stop training if no improvement for 3 epochs
+        restore_best_weights=True  # Restore the best weights after stopping
+    )
+
     model.summary()
 
     # Fit the model
     history = model.fit(train_dataset,
                         epochs=EPOCHS,
                         verbose=VERBOSE,
-                        validation_data=test_dataset)
+                        validation_data=test_dataset,
+                        callbacks=[early_stopping])
     score = model.evaluate(test_dataset,
                            verbose=VERBOSE)
     print(rf"Test Score {score[0]}")
     print(rf"Test Accuracy {score[1]}")
+
+    model.save(os.path.join(os.getcwd(), "models\\trained\\"+mod))
 
     plt.plot(history.history['accuracy'], label='train accuracy')
     plt.plot(history.history['val_accuracy'], label='val accuracy')
