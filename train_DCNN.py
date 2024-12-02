@@ -30,7 +30,7 @@ class LeNet(tf.keras.Model):
         self.pool2 = tf.keras.layers.MaxPooling2D(pool_size=(2, 2), strides=(2, 2))
 
         self.flatten = tf.keras.layers.Flatten()
-        self.fc1 = tf.keras.layers.Dense(units=500, activation='relu')
+        self.fc1 = tf.keras.layers.Dense(units=150, activation='relu')
         self.fc2 = tf.keras.layers.Dense(units=classes, activation='softmax')
 
     def call(self, inputs):
@@ -120,7 +120,7 @@ if __name__ == '__main__':
     # Input image parameters
     IMG_ROW,IMG_COL = target_size[0],target_size[1]
     IMG_CHANNELS = 3 # R,G,B
-    INPUT_SHAPE = (IMG_ROW,IMG_COL,IMG_CHANNELS)
+    INPUT_SHAPE = (IMG_ROW, IMG_COL, IMG_CHANNELS)
     NB_CLASSES = 2 # coherent and non-coherent
 
     # Build the CNN (LeNet)
