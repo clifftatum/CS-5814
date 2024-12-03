@@ -9,9 +9,10 @@ from sklearn.model_selection import train_test_split
 from models.DCNN import *
 
 gpus = tf.config.experimental.list_physical_devices('GPU')
-tf.config.experimental.set_memory_growth(gpus[0], True)
-from tensorflow.keras import mixed_precision
-mixed_precision.set_global_policy('mixed_float16')
+if len(gpus) > 1:
+    tf.config.experimental.set_memory_growth(gpus[0], True)
+
+tf.keras.mixed_precision.set_global_policy('mixed_float16')
 
 # Training Parameters
 EPOCHS = 50
